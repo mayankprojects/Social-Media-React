@@ -5,7 +5,7 @@ export default function Sidebar({ selectedTab, setSelectedTab }) {
     <>
       <div
         className="d-flex flex-column flex-shrink-0 p-3 text-bg-dark"
-        style={{ width: 200, height: '800px' }}
+        style={{ width: 200, minHeight: '800px' }}
       >
         <a
           href="/"
