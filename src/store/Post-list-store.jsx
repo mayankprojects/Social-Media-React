@@ -1,10 +1,10 @@
-import { act, createContext, useReducer } from "react";
+import { createContext, useReducer, useState, useEffect } from "react";
 
 export const PostListContext = createContext({
   postList: [],
   addPost: () => {},
   deletePost: () => {},
-  initialPost: () => {}
+  fetching: false
 });
 
 const PostListReducer = (currPostList, action) => {
@@ -14,13 +14,12 @@ const PostListReducer = (currPostList, action) => {
     newPostList = currPostList.filter(
       (post) => post.id !== action.payload.postId
     );
+  } else if (action.type === "ADD") {
+    newPostList = [action.payload.post, ...currPostList];
+  } else if (action.type === "INITIAL") {
+    newPostList = action.payload.data;
   }
-  else if(action.type === "ADD"){
-    newPostList = [action.payload, ...currPostList];
-  }
-  else if(action.type === "INITIAL"){
-    newPostList = action.payload.data
-  }
+
   return newPostList;
 };
 
@@ -30,18 +29,15 @@ export default function PostListProvider({ children }) {
     DEFAULT_POST_LIST
   );
 
-  const addPost = (userId, postTitle, postContent, reactions, hashtags) => {
+  const [fetching, setFetching] = useState(false);
+
+  const addPost = (post) => {
     const actionObj = {
-      type : "ADD",
+      type: "ADD",
       payload: {
-        id : Date.now(),
-        title: postTitle,
-        body: postContent,
-        reactions: reactions,
-        userId: userId, 
-        tags: hashtags
-      }
-    }
+        post,
+      },
+    };
     setPostList(actionObj);
   };
 
@@ -59,14 +55,35 @@ export default function PostListProvider({ children }) {
     const actionObj = {
       type: "INITIAL",
       payload: {
-        data: data.posts
+        data: data.posts,
       },
     };
     setPostList(actionObj);
-  }
+  };
+
+  useEffect(() => {
+    setFetching(true);
+    const controller = new AbortController();
+    const signal = controller.signal;
+    fetch("https://dummyjson.com/posts")
+      .then((res) => res.json())
+      .then(
+        (data) => {
+          initialPost(data);
+          setFetching(false);
+        },
+        { signal }
+      );
+
+    return () => {
+      controller.abort();
+    };
+  }, []);
 
   return (
-    <PostListContext.Provider value={{ postList, addPost, deletePost, initialPost }}>
+    <PostListContext.Provider
+      value={{ postList, addPost, deletePost, fetching}}
+    >
       {children}
     </PostListContext.Provider>
   );

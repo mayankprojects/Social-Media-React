@@ -19,14 +19,28 @@ export default function CreatePost() {
     const reactions = reactionsEle.current.value;
     const hashtags = hashtagsEle.current.value.split(" ");
 
-    userIdEle.current.value = ""
-    postTitleEle.current.value = ""
-    postContentEle.current.value = ""
-    reactionsEle.current.value = ""
-    hashtagsEle.current.value = ""
+    // userIdEle.current.value = "";
+    // postTitleEle.current.value = "";
+    // postContentEle.current.value = "";
+    // reactionsEle.current.value = "";
+    // hashtagsEle.current.value = "";
 
-    addPost(userId, postTitle, postContent, reactions, hashtags)
-
+    fetch("https://dummyjson.com/posts/add", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: postTitle,
+        body: postContent,
+        reactions: reactions,
+        userId: userId,
+        tags: hashtags,
+      }),
+    })
+      .then((res) => res.json())
+      .then((resObj) => {
+        addPost(resObj);
+        // console.log(resObj.id);
+      });
   };
 
   return (
